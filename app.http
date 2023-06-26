@@ -18,4 +18,4 @@ GET http://localhost:3000/players/1/matches/
 ###
 GET http://localhost:3000/matches/3/players/
 ###
-GET http://localhost:3000/players/3/playerScores
+GET http://localhost:3000/players/5/playerScores

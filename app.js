@@ -102,21 +102,12 @@ app.get("/players/:playerId/matches", async (request, response) => {
   const { playerId } = request.params;
 
   const query = `
-        SELECT *
-        FROM player_match_score JOIN match_details
+        SELECT match_details.match_id AS matchId,match_details.match AS match, match_details.year AS year 
+        FROM player_match_score NATURAL JOIN match_details
         WHERE player_id = ${playerId};
     `;
   const dbResponse = await db.all(query);
-  const convertToListOfMatches = (eachMatch) => {
-    return {
-      matchId: eachMatch.match_id,
-      match: eachMatch.match,
-      year: eachMatch.year,
-    };
-  };
-  response.send(
-    dbResponse.map((eachMatch) => convertToListOfMatches(eachMatch))
-  );
+  response.send(dbResponse);
 });
 
 //Returns a list of players of a specific match API.>>>
@@ -126,10 +117,10 @@ app.get("/matches/:matchId/players", async (request, response) => {
 
   const query = `
     SELECT player_details.player_id AS playerId,player_details.player_name AS playerName
-    FROM player_match_score JOIN player_details
+    FROM player_match_score NATURAL JOIN player_details
     WHERE player_match_score.match_id = ${matchId};
     `;
-  const dbResponse = await db.get(query);
+  const dbResponse = await db.all(query);
   response.send(dbResponse);
 });
 
@@ -138,8 +129,8 @@ app.get("/matches/:matchId/players", async (request, response) => {
 app.get("/players/:playerId/playerScores", async (request, response) => {
   const { playerId } = request.params;
   const query = `
-    SELECT player_details.player_id AS playerId,player_details.player_name AS playerName,SUM(player_match_score.score) AS totalScore,SUM(player_match_score.fours) AS totalFours,SUM(player_match_score.sixes) totalSixes
-    FROM player_match_score JOIN player_details
+    SELECT player_details.player_id AS playerId,player_details.player_name AS playerName,SUM(player_match_score.score) AS totalScore,SUM(player_match_score.fours) AS totalFours,SUM(player_match_score.sixes) AS totalSixes
+    FROM player_details INNER JOIN player_match_score ON player_details.player_id = player_match_score.player_id
     WHERE player_details.player_id = ${playerId};
     `;
   const dbResponse = await db.all(query);
